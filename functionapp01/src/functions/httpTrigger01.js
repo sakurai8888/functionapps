@@ -19,6 +19,8 @@ async function myfunction(functioninput01,functioninput02) {
     return `${myoutput}`;
 };
 
+
+
 app.http('httpTrigger01', {
     methods: ['GET', 'POST'],
     authLevel: 'anonymous',
@@ -26,8 +28,6 @@ app.http('httpTrigger01', {
         context.log(`Http function processed request for url "${request.url}"`);
 
         const name01 = request.query.get('name01') || await request.text() || 'world';
-
-        
         const name02 = request.query.get('name02') || await request.text() || 'world';
 
         const result = await myfunction(name01,name02);
