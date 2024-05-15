@@ -1,3 +1,10 @@
+/*
+To debug this script , need to have Azurite Installed , 
+also install Azurite extension, and init before debug . AzureStorageEmulator.exe init 
+Then click on the button in the below screen. 
+
+*/
+
 const  df  = require("durable-functions");
 df.app.activity("myActivity", {
     handler: async function (context) {
