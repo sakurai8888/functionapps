@@ -5,22 +5,70 @@ df.app.activity("myActivity", {
     },
 });
 
-const helloActivity = df.app.activity("hello", {
+function delay(duration) {
+    return new Promise((resolve) => setTimeout(resolve, duration));
+  }
+
+df.app.activity("helloActivity01", {
     handler: async function (input) {
-        return `Hello, ${input}`;
+        const delayInSeconds = 5;
+        await delay(delayInSeconds * 1000);
+        return `hello ! ${input}`;
     },
 });
+
+df.app.activity("helloActivity02", {
+    handler: async function (input) {
+        const delayInSeconds = 10;
+        await delay(delayInSeconds * 1000);
+        return `delay longer ! ${input}`;
+    },
+});
+
 
 df.app.orchestration("helloSequence", function* (context) {
     context.log("Starting chain sample");
 
     const output = [];
-    output.push(yield helloActivity("Tokyo"));
-    output.push(yield helloActivity("Seattle"));
-    output.push(yield helloActivity("Cairo"));
+    output.push(yield context.df.callActivity("helloActivity01","Tokyo"));
+    output.push(yield context.df.callActivity("helloActivity02","long"));
+    output.push(yield context.df.callActivity("helloActivity01","short"));
 
     return output;
 });
+
+
+
+// Make an http trigger endpoint for the Orchestrator Function 
+// Endpoint url http://localhost:7071/runtime/webhooks/durabletask/orchestrators/helloSequence , post method
+
+module.exports = async function (context, req) {
+    const functionName = "helloSequence"; // Replace with the name of your orchestrator function
+    const client = df.getClient(context);
+  
+    try {
+      // Start the Durable Function orchestration
+      const instanceId = await client.startNew(functionName, undefined, req.body);
+  
+      // Return the instanceId as the HTTP response
+      context.res = {
+        status: 202,
+        body: {
+          instanceId: instanceId,
+        },
+      };
+    } catch (error) {
+      // Return the error message as the HTTP response
+      context.res = {
+        status: 500,
+        body: {
+          error: "An error occurred while starting the orchestration.",
+          message: error.message,
+        },
+      };
+    }
+  };
+
 
 /*
 module.exports = async function (context, req) {
